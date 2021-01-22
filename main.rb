@@ -18,6 +18,7 @@ $logging = Logger.new(STDOUT)
 
 REPOSITORIES_DIR = "/repositories/"
 
+class FileNotFound < StandardError; end
 
 # Configure ActiveRecord connection
 ActiveRecord::Base.establish_connection(
@@ -35,7 +36,7 @@ def analyze_repo(repo_id)
 
     unless File.directory?(repo_path)
         $logging.warn("Repository download dir not found: '#{repo_path}'")
-        return
+        raise(FileNotFound, "File #{repo_path} not found")
     end
 
     $logging.info("Collecting metrics for '#{repo_id}'")
@@ -45,6 +46,7 @@ def analyze_repo(repo_id)
         cycromatic: MetricCycromatic.analyze(repo_path)
     }
     # puts metrics
+    $logging.debug("Collected metrics: #{metrics}")
 
     # Save metrics to DB
     RubyMetric.upsert(
@@ -72,7 +74,6 @@ x  = ch.default_exchange
 # }
 
 # x.publish(msg.to_json, :routing_key => q.name)
-# sleep 1.0
 
 $logging.info("Starting message loop")
 
@@ -86,15 +87,21 @@ loop do
         payload = JSON.parse(payload)
         $logging.debug "Message Received: #{payload}"
 
-        raise ":(" unless analyze_repo(payload["repo_id"])
+        raise "Metric calculation Error" unless analyze_repo(payload["repo_id"])
 
         ch.ack(delivery_info.delivery_tag)
+        x.publish({
+            repo_id: payload["repo_id"],
+            language_id: RUBY_LANGAUGE_ID
+        }.to_json, routing_key: "gc")
         $logging.info("Completed request: #{payload}")
     rescue JSON::ParserError
         # Message is not correct JSON, we can't parse it, we reject it!
         $logging.warn("Rejecting malformed message: #{payload}")
         ch.nack(delivery_info.delivery_tag, requeue: false)
-
+    rescue FileNotFound => e
+        $logging.warn("FileNotFound: #{e}")
+        ch.nack(delivery_info.delivery_tag, requeue: false)
     rescue Exception => e
         ch.reject(delivery_info.delivery_tag, requeue: true)
         raise
