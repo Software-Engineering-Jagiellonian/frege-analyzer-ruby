@@ -45,7 +45,6 @@ def analyze_repo(repo_id)
         rubycritic: MetricRubyCritic.analyze(repo_path),
         cycromatic: MetricCycromatic.analyze(repo_path)
     }
-    # puts metrics
     $logging.debug("Collected metrics: #{metrics}")
 
     # Save metrics to DB
@@ -69,11 +68,6 @@ ch = conn.create_channel
 q  = ch.queue("analyze-ruby", :durable => true)#, :auto_delete => true)
 x  = ch.default_exchange
 
-# msg = {
-#     repo_id: "conway-game-of-life-ruby"
-# }
-
-# x.publish(msg.to_json, :routing_key => q.name)
 
 $logging.info("Starting message loop")
 
