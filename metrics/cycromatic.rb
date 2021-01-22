@@ -1,6 +1,6 @@
 class MetricCycromatic
     def self.analyze(dir_path)
-        output = %x( bundle exec cycromatic #{dir_path} )
+        output = %x( cycromatic #{dir_path} )
         values = []
         per_file = {}
         values = output.split("\n").map { |line| 

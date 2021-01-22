@@ -37,5 +37,17 @@ TBA
 #### Cycromatic
 TBA
 
+## Deployment
+
+### Build Image
+```
+docker build -t frege-analyzer-ruby .
+```
+
+### Run Image
+```
+docker run -e DB_HOST=172.17.0.3 -e DB_PORT=5432 -e DB_USERNAME=postgres -e DB_PASSWORD=haslo123 -e DB_DATABASE=frege -e RMQ_HOST=172.17.0.2 -e RMQ_PORT=5672 -v ./repositories:/repositories:ro frege-analyzer-ruby
+```
+
 ## Authors
 Paweł Kubiak (github.com/pkubiak)

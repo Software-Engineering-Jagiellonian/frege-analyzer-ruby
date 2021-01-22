@@ -1,7 +1,7 @@
 
 class MetricFlog
     def self.analyze(dirpath)
-        output = %x( bundle exec flog -a -c -s #{dirpath} )
+        output = %x( flog -a -c -s #{dirpath} )
 
         output = output.split("\n").map { |line|
             value, key = line.split(":")

@@ -16,7 +16,7 @@ require "./metrics/cycromatic"
 
 $logging = Logger.new(STDOUT)
 
-REPOSITORIES_DIR = "./repositories/"
+REPOSITORIES_DIR = "/repositories/"
 
 
 # Configure ActiveRecord connection
@@ -95,8 +95,9 @@ loop do
         $logging.warn("Rejecting malformed message: #{payload}")
         ch.nack(delivery_info.delivery_tag, requeue: false)
 
-    rescue Exception 
+    rescue Exception => e
         ch.reject(delivery_info.delivery_tag, requeue: true)
+        raise
     end
 end
 
