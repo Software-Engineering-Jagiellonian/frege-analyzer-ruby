@@ -29,7 +29,7 @@ class MetricRubyCritic
             result[:per_method][key] = 1.0 * result[:total][key] / result[:total]["methods_count"]
         }
         
-        pp(result)
+        # pp(result)
         return result
     end
 end

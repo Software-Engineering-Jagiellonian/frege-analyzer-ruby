@@ -1,5 +1,5 @@
 
-class MetricsFlog
+class MetricFlog
     def self.analyze(dirpath)
         output = %x( bundle exec flog -a -c -s #{dirpath} )
 
